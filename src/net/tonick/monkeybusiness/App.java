@@ -47,7 +47,7 @@ public class App {
         int indexOf = 0;
 
         for (; ; ) {
-            indexOf = KnuthMorrisPratt.indexOf(bytes, indexOf, bytes.length - indexOf, scriptTag);
+            indexOf = KnuthMorrisPratt.indexOf(bytes, indexOf, bytes.length, scriptTag);
             if (indexOf < 0) {
                 break;
             }
