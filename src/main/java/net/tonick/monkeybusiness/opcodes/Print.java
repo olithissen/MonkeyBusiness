@@ -1,6 +1,7 @@
 package net.tonick.monkeybusiness.opcodes;
 
-public class Print extends OpCode {
+public class Print extends OpCode implements ITextContainer {
+    private String actor;
     private byte[] bytes;
     private String text;
 
@@ -12,6 +13,7 @@ public class Print extends OpCode {
         this.bytes = bytes;
     }
 
+    @Override
     public String getText() {
         return text;
     }
@@ -23,7 +25,17 @@ public class Print extends OpCode {
     @Override
     public String toString() {
         return "Print{" +
-                "text='" + text + '\'' +
+                "actor='" + actor + '\'' +
+                ", text='" + text + '\'' +
                 '}';
+    }
+
+    public String getActor() {
+        return actor;
+    }
+
+    public Print setActor(String actor) {
+        this.actor = actor;
+        return this;
     }
 }

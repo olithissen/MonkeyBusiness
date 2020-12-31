@@ -93,7 +93,7 @@ class MonkeyBusinessTest {
 
     @Test
     public void testParserOnFullGameFile() throws IOException {
-        File f = new File("D:\\Downloads\\scummvm\\The Secret Of Monkey Island (CD DOS, German)\\monkey.001");
+        File f = new File("/home/oli/Downloads/mi1/monkey.001");
 
         ScriptParser parser = new ScriptParser();
 
@@ -111,7 +111,7 @@ class MonkeyBusinessTest {
 
 //    @Test
     public void createRegressiveTestFiles() throws IOException {
-        File f = new File("D:\\Downloads\\scummvm\\The Secret Of Monkey Island (CD DOS, German)\\monkey.001");
+        File f = new File("/home/oli/Downloads/mi1/monkey.001");
 
         ScriptParser parser = new ScriptParser();
 

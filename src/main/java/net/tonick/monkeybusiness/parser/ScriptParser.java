@@ -412,8 +412,6 @@ public class ScriptParser {
             }
         }
 
-        logger.printf(Level.INFO, "Finished parser for script type \"%s\" @ %08X. Errors: %s", script.getType(), script.getOffset(), script.hasErrors());
-
         return script;
     }
 
@@ -489,11 +487,14 @@ public class ScriptParser {
     private class StringOpsParser extends OpCodeParser<StringOps> {
         @Override
         public StringOps parse() {
+            StringOps stringOps = new StringOps();
+
             opcode = readValue8();
             switch (opcode & (byte)0x1F) {
                 case 1:
                     getVarOrDirectByte(PARAM_1);
-                    loadPtrToResource(resStrLen());
+                    String s = loadPtrToResource(resStrLen());
+                    stringOps.setText(s);
                     break;
                 case 2:
                     getVarOrDirectByte(PARAM_1);
@@ -516,7 +517,7 @@ public class ScriptParser {
                 default:
                     break;
             }
-            return new StringOps();
+            return stringOps;
         }
     }
 
@@ -1368,6 +1369,7 @@ public class ScriptParser {
         public Print parse() {
             Print p = new Print();
             int actor = getVarOrDirectByte(PARAM_1);
+            p.setActor(String.valueOf(actor));
 
             while ((opcode = readValue8()) != (byte) 0xFF) {
                 // Text Pos
@@ -1413,6 +1415,8 @@ public class ScriptParser {
         @Override
         public Print parse() {
             Print p = new Print();
+
+            p.setActor("Guybrush");
 
             while ((opcode = readValue8()) != (byte)0xFF) {
                 // Text Pos

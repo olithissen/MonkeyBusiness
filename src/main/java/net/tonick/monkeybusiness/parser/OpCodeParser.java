@@ -89,7 +89,7 @@ public abstract class OpCodeParser<C extends OpCode> {
         buffer.get(textBuffer);
         // Advance pointer over 0x00
         buffer.get();
-        return new String(textBuffer, Charset.forName("CP850"));
+        return new String(textBuffer, Charset.forName("IBM850"));
     }
 
     public final String loadPtrToResource2() {
