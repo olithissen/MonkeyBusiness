@@ -6,10 +6,10 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="net.tonick.monkeybusiness" level="trace" additivity="false">
+        <Logger name="net.tonick.monkeybusiness.util.TextBeautifier" level="info" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
-        <Root level="info">
+        <Root level="error">
             <AppenderRef ref="Console"/>
         </Root>
     </Loggers>
