@@ -19,11 +19,12 @@ public class ScriptExtractor {
     public static final String LSCR = "LSCR"; // local script
     public static final String EXCD = "EXCD"; // exit scene script
     public static final String ENCD = "ENCD"; // enter scene script
+    public static final String OBCD = "VERB"; // enter scene script
     public static final int SCRIPT_TAG_LENGTH = 4;
 
 
     public static List<Script> extractScripts(byte[] bytes) {
-        List<Script> scripts = List.of(SCRP, LSCR, EXCD, ENCD).stream()
+        List<Script> scripts = List.of(SCRP, LSCR, EXCD, ENCD, OBCD).stream()
                 .map(String::getBytes)
                 .map(scriptType -> extractScript(bytes, scriptType))
                 .flatMap(Collection::stream)

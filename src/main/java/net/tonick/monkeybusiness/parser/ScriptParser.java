@@ -385,7 +385,32 @@ public class ScriptParser {
         if (script.getType().equals("LSCR")) {
             offset = 9;
         }
+
         buffer.position(offset);
+
+        if (script.getType().equals("VERB")) {
+            // get lowest index from VERB index table
+            byte currentVerb;
+            int lowestOffset = 255;
+            boolean hasVerbs = false;
+
+            for(;;) {
+                currentVerb = buffer.get();
+
+                if (currentVerb == 0x00) {
+                    if (!hasVerbs) {
+                        lowestOffset = 9;
+                    }
+                    offset = lowestOffset;
+                    buffer.position(offset);
+                    break;
+                }
+                hasVerbs = true;
+                int verbOffset = buffer.get() & 0xff;
+                lowestOffset = (Math.min(lowestOffset, verbOffset));
+                buffer.get();
+            }
+        }
 
         while (buffer.position() < bytes.length) {
             byte opCode = buffer.get();
@@ -541,6 +566,8 @@ public class ScriptParser {
     private class VerbOpsParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
+            VerbOps verbOps = new VerbOps();
+
             getVarOrDirectByte(PARAM_1);
 
             while ((opcode = readValue8()) != (byte) 0xff) {
@@ -550,7 +577,8 @@ public class ScriptParser {
                         getVarOrDirectWord(PARAM_1);
                         break;
                     case 2:
-                        loadPtrToResource(resStrLen());
+                        String s = loadPtrToResource(resStrLen());
+                        verbOps.setText(s);
                         break;
                     case 3:
                         getVarOrDirectByte(PARAM_1);
@@ -598,7 +626,7 @@ public class ScriptParser {
                 }
             }
 
-            return new VerbOps();
+            return verbOps;
         }
     }
 

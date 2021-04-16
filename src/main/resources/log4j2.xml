@@ -9,7 +9,7 @@
         <Logger name="net.tonick.monkeybusiness.util.TextBeautifier" level="info" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
-        <Root level="error">
+        <Root level="trace">
             <AppenderRef ref="Console"/>
         </Root>
     </Loggers>

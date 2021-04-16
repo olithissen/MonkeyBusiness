@@ -51,15 +51,19 @@ public abstract class OpCodeParser<C extends OpCode> {
 
     public final int getVarOrDirectByte(byte mask) {
         if ((opcode & mask) != 0) {
+//            logger.printf(Level.TRACE,"opcode 0x%02X: getVarOrDirectByte(mask: 0x%02X) -> result: 0x%02X -> getVar()", opcode, mask, (byte)(opcode & mask));
             return getVar();
         }
+//        logger.printf(Level.TRACE,"opcode 0x%02X: getVarOrDirectByte(mask: 0x%02X) -> result: 0x%02X -> getByte()", opcode, mask, (byte)(opcode & mask));
         return buffer.get();
     }
 
     public final int getVarOrDirectWord(byte mask) {
         if ((opcode & mask) != 0) {
+//            logger.printf(Level.TRACE,"opcode 0x%02X: getVarOrDirectWord(mask: 0x%02X) -> result: 0x%02X -> getVar()", opcode, mask, (byte)(opcode & mask));
             return getVar();
         }
+//        logger.printf(Level.TRACE,"opcode 0x%02X: getVarOrDirectWord(mask: 0x%02X) -> result: 0x%02X -> fetchScriptWord()", opcode, mask, (byte)(opcode & mask));
         return fetchScriptWord();
     }
 
@@ -81,7 +85,6 @@ public abstract class OpCodeParser<C extends OpCode> {
         }
 
         return num;
-        //return duplicate.position() - 1 - buffer.position();
     }
 
     public final String loadPtrToResource(int textLength) {
@@ -90,28 +93,6 @@ public abstract class OpCodeParser<C extends OpCode> {
         // Advance pointer over 0x00
         buffer.get();
         return new String(textBuffer, Charset.forName("IBM850"));
-    }
-
-    public final String loadPtrToResource2() {
-        ByteBuffer duplicate = buffer.duplicate();
-
-        byte chr;
-        while ((chr = duplicate.get()) != (byte) 0x00) {
-//            if (chr == (byte) 0xFF) {
-//                chr = duplicate.get();
-//
-//                if (chr != 1 && chr != 2 && chr != 3 && chr != 8) {
-//                    duplicate.position(duplicate.position() + 2);
-//                }
-//            }
-        }
-
-        int textLength = duplicate.position() - 1 - buffer.position();
-        byte[] textBuffer = new byte[textLength];
-        buffer.get(textBuffer);
-        // Advance pointer over 0x00
-        buffer.get();
-        return new String(textBuffer, Charset.forName("CP850"));
     }
 
     public final short fetchScriptWord() {
@@ -156,6 +137,8 @@ public abstract class OpCodeParser<C extends OpCode> {
     }
 
     public final List<Short> getWordVararg() {
+//        logger.printf(Level.TRACE,"> getWordVararg");
+
         List<Short> values = new ArrayList<>();
 
         byte aux;
@@ -167,6 +150,7 @@ public abstract class OpCodeParser<C extends OpCode> {
             }
         } while (aux != (byte) 0xFF);
 
+//        logger.printf(Level.TRACE,"< getWordVararg");
         return values;
     }
 }
