@@ -1,7 +1,7 @@
 package net.tonick.monkeybusiness.parser;
 
-import net.tonick.monkeybusiness.util.HexPrettyPrinter;
 import net.tonick.monkeybusiness.opcodes.OpCode;
+import net.tonick.monkeybusiness.util.HexPrettyPrinter;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,7 +16,6 @@ import java.util.List;
 public abstract class OpCodeParser<C extends OpCode> {
     private static final Logger logger = LogManager.getLogger(OpCodeParser.class);
 
-    private byte mainOpCode;
     protected byte opcode;
     protected ByteBuffer buffer;
     public static final byte PARAM_1 = (byte) 0x80;
@@ -25,14 +24,13 @@ public abstract class OpCodeParser<C extends OpCode> {
 
     public final C run(byte opcode, ByteBuffer buffer) {
         this.opcode = opcode;
-        this.mainOpCode = opcode;
         this.buffer = buffer;
 
         int start = buffer.position() - 1;
         C parseResult = parse();
         byte[] opCodeBytes = Arrays.copyOfRange(buffer.array(), start, buffer.position());
         logger.printf(Level.TRACE, "%s", HexPrettyPrinter.hexStack(opCodeBytes));
-        parseResult.setOpCode(this.mainOpCode);
+        parseResult.setOpCode(opcode);
         parseResult.setOriginalBytes(opCodeBytes);
         return parseResult;
     }

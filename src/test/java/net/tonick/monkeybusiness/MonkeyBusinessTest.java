@@ -4,11 +4,9 @@ import net.tonick.monkeybusiness.opcodes.*;
 import net.tonick.monkeybusiness.parser.Script;
 import net.tonick.monkeybusiness.parser.ScriptExtractor;
 import net.tonick.monkeybusiness.parser.ScriptParser;
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.opentest4j.TestAbortedException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -28,6 +26,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class MonkeyBusinessTest {
     public static Stream<Path> regressiveTestFileProvider() throws IOException {
         Path path = Paths.get("src", "test", "resources", "opcodes");
@@ -35,6 +34,7 @@ class MonkeyBusinessTest {
     }
 
     @Test
+    @Order(1)
     public void testReadScriptAt() throws IOException {
         File f = new File(getClass().getClassLoader().getResource("script1.bin").getFile());
 
@@ -93,13 +93,14 @@ class MonkeyBusinessTest {
                     StopObjectCode.class);
         }
 
-        List<? extends Class<? extends OpCode>> collect = opCodes.stream().map(OpCode::getClass).collect(Collectors.toList());
+        List<? extends Class<? extends OpCode>> collect = opCodes.stream().map(OpCode::getClass).toList();
 
         assertEquals(test.size(), collect.size());
         assertArrayEquals(test.toArray(), collect.toArray());
     }
 
     @Test
+    @Order(2)
     public void testParserOnFullGameFile() throws IOException {
         URL resource = getClass().getClassLoader().getResource("monkey.001");
         Assumptions.assumeTrue(resource != null);
@@ -118,7 +119,13 @@ class MonkeyBusinessTest {
         assertEquals(0, failedScripts);
     }
 
+    /**
+     * This is not really a test but rather a test-generator. It creates a One-OPCODE-Script for each OPCODE
+     *
+     * @throws IOException Error reading file
+     */
     @Test
+    @Order(3)
     public void createRegressiveTestFiles() throws IOException {
         URL resource = getClass().getClassLoader().getResource("monkey.001");
         Assumptions.assumeTrue(resource != null);
@@ -133,7 +140,7 @@ class MonkeyBusinessTest {
                 .map(parser::parse)
                 .filter(script -> !script.hasParseError() && script.isTerminatedCorrectly())
                 .flatMap(script -> script.getOpCodes().stream())
-                .collect(Collectors.toList());
+                .toList();
 
         Map<String, ByteArrayOutputStream> ocMap = new HashMap<>();
 
@@ -147,7 +154,8 @@ class MonkeyBusinessTest {
             byteArray.writeBytes(opCode.getOriginalBytes());
         });
 
-        Path path = Paths.get("src", "test", "resources", "opcodes");
+        Path path = Paths.get("src/test/resources/opcodes");
+        Files.createDirectories(path);
         ocMap.forEach((key, value) -> {
             Path newFile = Paths.get(path.toAbsolutePath().toString(), key + ".bin");
             try {
@@ -162,11 +170,12 @@ class MonkeyBusinessTest {
             }
         });
 
-        System.out.print("OK");
+        assertTrue(true);
     }
 
     @ParameterizedTest
     @MethodSource("regressiveTestFileProvider")
+    @Order(4)
     public void testAllOpCodesRegressive(Path path) throws IOException {
         ScriptParser parser = new ScriptParser();
 

@@ -1,12 +1,10 @@
 package net.tonick.monkeybusiness.util;
 
-import java.nio.ByteBuffer;
-
 public class HexPrettyPrinter {
     public static String hexView(byte[] bytes, int groupSize) {
-        StringBuffer sb = new StringBuffer();
-        StringBuffer hex = new StringBuffer();
-        StringBuffer ascii = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
+        StringBuilder hex = new StringBuilder();
+        StringBuilder ascii = new StringBuilder();
 
         for (int i = 0; i < bytes.length; i++) {
             if (i % groupSize == 0) {
@@ -30,9 +28,9 @@ public class HexPrettyPrinter {
     }
 
     public static String hexStack(byte[] bytes) {
-        StringBuffer hex = new StringBuffer();
-        for (int i = 0; i < bytes.length; i++) {
-            hex.append(String.format("%02X ", bytes[i]));
+        StringBuilder hex = new StringBuilder();
+        for (byte aByte : bytes) {
+            hex.append(String.format("%02X ", aByte));
         }
         return hex.toString();
     }

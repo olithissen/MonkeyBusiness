@@ -1,6 +1,7 @@
 # Monkey Business
 
 A poor Scumm v5 script extractor ...
+The back story to this project is covered in my blog post ["A deep dive into the SCUMM bytecode"](https://tonick.net/p/2021/03/a-deep-dive-into-the-scumm-bytecode/)
 
 ## Requirements
 

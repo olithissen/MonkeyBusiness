@@ -1,7 +1,7 @@
 package net.tonick.monkeybusiness.parser;
 
-import net.tonick.monkeybusiness.util.HexPrettyPrinter;
 import net.tonick.monkeybusiness.opcodes.*;
+import net.tonick.monkeybusiness.util.HexPrettyPrinter;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,12 +14,12 @@ import java.util.Map;
 /**
  * Heavy lifting
  */
+@SuppressWarnings("rawtypes")
 public class ScriptParser {
     private static final Logger logger = LogManager.getLogger(ScriptParser.class);
 
-    public Map<Byte, OpCodeParser> opCodeLookup = new HashMap<>();
-    private ByteBuffer buffer;
-    private Script script;
+    @SuppressWarnings("rawtypes")
+    public static Map<Byte, OpCodeParser> opCodeLookup = new HashMap<>();
 
     public ScriptParser() {
         // Collapsible Region for OpCodes
@@ -377,10 +377,8 @@ public class ScriptParser {
             logger.printf(Level.TRACE, "Hex: %n%s", HexPrettyPrinter.hexView(script.getOriginalBytes(), 16));
         }
 
-        this.script = script;
-
         byte[] bytes = script.getOriginalBytes();
-        buffer = ByteBuffer.wrap(bytes);
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
         int offset = 8;
         if (script.getType().equals("LSCR")) {
             offset = 9;
@@ -441,7 +439,7 @@ public class ScriptParser {
     }
 
     // 0x44
-    class CutSceneParser extends OpCodeParser<OpCode> {
+    static class CutSceneParser extends OpCodeParser<OpCode> {
         public OpCode parse() {
             getWordVararg();
             return new CutScene();
@@ -449,7 +447,7 @@ public class ScriptParser {
     }
 
     // 0x72
-    private class LoadRoomParser extends OpCodeParser<OpCode> {
+    private static class LoadRoomParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             getVarOrDirectByte(PARAM_1);
@@ -457,7 +455,7 @@ public class ScriptParser {
         }
     }
 
-    private class ActorFollowCameraParser extends OpCodeParser<ActorFollowCamera> {
+    private static class ActorFollowCameraParser extends OpCodeParser<ActorFollowCamera> {
         @Override
         public ActorFollowCamera parse() {
             getVarOrDirectByte(PARAM_1);
@@ -467,86 +465,73 @@ public class ScriptParser {
     }
 
     // 0x2C
-    private class CursorCommandParser extends OpCodeParser<OpCode> {
+    private static class CursorCommandParser extends OpCodeParser<OpCode> {
         // TODO: Haben Sub-Opcodes auch die 0x80, 0x40 und 0x20 Ausprägungen?
         @Override
         public OpCode parse() {
             opcode = readValue8();
 
             switch (opcode & (byte) 0x1F) {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                    break;
-                case 10:
+                case 1, 2, 3, 4, 5, 6, 7, 8 -> {
+                }
+                case 10 -> {
                     getVarOrDirectByte(PARAM_1);
                     getVarOrDirectByte(PARAM_2);
-                    break;
-                case 11:
+                }
+                case 11 -> {
                     getVarOrDirectByte(PARAM_1);
                     getVarOrDirectByte(PARAM_2);
                     getVarOrDirectByte(PARAM_3);
-                    break;
-                case 12:
-                    getVarOrDirectByte(PARAM_1);
-                    break;
-                case 13:
-                    getVarOrDirectByte(PARAM_1);
-                    break;
-                case 14:
-                    getWordVararg();
-                    break;
-                default:
-                    break;
+                }
+                case 12 -> getVarOrDirectByte(PARAM_1);
+                case 13 -> getVarOrDirectByte(PARAM_1);
+                case 14 -> getWordVararg();
+                default -> {
+                }
             }
 
             return new CursorCommand();
         }
     }
 
-    private class StringOpsParser extends OpCodeParser<StringOps> {
+    private static class StringOpsParser extends OpCodeParser<StringOps> {
         @Override
         public StringOps parse() {
             StringOps stringOps = new StringOps();
 
             opcode = readValue8();
-            switch (opcode & (byte)0x1F) {
-                case 1:
+            switch (opcode & (byte) 0x1F) {
+                case 1 -> {
                     getVarOrDirectByte(PARAM_1);
                     String s = loadPtrToResource(resStrLen());
                     stringOps.setText(s);
-                    break;
-                case 2:
+                }
+                case 2 -> {
                     getVarOrDirectByte(PARAM_1);
                     getVarOrDirectByte(PARAM_2);
-                    break;
-                case 3:
+                }
+                case 3 -> {
                     getVarOrDirectByte(PARAM_1);
                     getVarOrDirectByte(PARAM_2);
                     getVarOrDirectByte(PARAM_3);
-                    break;
-                case 4:
-                    int pos = getResultPos();
-                    int a = getVarOrDirectByte(PARAM_1);
-                    int b = getVarOrDirectByte(PARAM_2);
-                    break;
-                case 5:
+                }
+                case 4 -> {
+                    getResultPos();
                     getVarOrDirectByte(PARAM_1);
                     getVarOrDirectByte(PARAM_2);
-                    break;
-                default:
-                    break;
+                }
+                case 5 -> {
+                    getVarOrDirectByte(PARAM_1);
+                    getVarOrDirectByte(PARAM_2);
+                }
+                default -> {
+                }
             }
             return stringOps;
         }
     }
 
-    private class SubtractParser extends OpCodeParser<OpCode> {
+    private static class SubtractParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             getResultPos();
@@ -555,7 +540,7 @@ public class ScriptParser {
         }
     }
 
-    private class SystemOpsParser extends OpCodeParser<OpCode> {
+    private static class SystemOpsParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             opcode = readValue8();
@@ -563,7 +548,7 @@ public class ScriptParser {
         }
     }
 
-    private class VerbOpsParser extends OpCodeParser<OpCode> {
+    private static class VerbOpsParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             VerbOps verbOps = new VerbOps();
@@ -573,56 +558,36 @@ public class ScriptParser {
             while ((opcode = readValue8()) != (byte) 0xff) {
 
                 switch (opcode & (byte) 0x1F) {
-                    case 1:
-                        getVarOrDirectWord(PARAM_1);
-                        break;
-                    case 2:
+                    case 1 -> getVarOrDirectWord(PARAM_1);
+                    case 2 -> {
                         String s = loadPtrToResource(resStrLen());
                         verbOps.setText(s);
-                        break;
-                    case 3:
-                        getVarOrDirectByte(PARAM_1);
-                        break;
-
-                    case 4:
-                        getVarOrDirectByte(PARAM_1);
-                        break;
-
-                    case 5:
+                    }
+                    case 3 -> getVarOrDirectByte(PARAM_1);
+                    case 4 -> getVarOrDirectByte(PARAM_1);
+                    case 5 -> {
                         getVarOrDirectWord(PARAM_1);
                         getVarOrDirectWord(PARAM_2);
-                        break;
-
-                    case 6:
-                    case 7:
-                    case 8:
-                    case 9:
-                        break;
-                    case 16:
-                        getVarOrDirectByte(PARAM_1);
-                        break;
-
-                    case 17:
-                        break;
-                    case 18:
-                        getVarOrDirectByte(PARAM_1);
-                        break;
-
-                    case 19:
-                        break;
-                    case 20:
+                    }
+                    case 6, 7, 8, 9 -> {
+                    }
+                    case 16 -> getVarOrDirectByte(PARAM_1);
+                    case 17 -> {
+                    }
+                    case 18 -> getVarOrDirectByte(PARAM_1);
+                    case 19 -> {
+                    }
+                    case 20 -> {
                         getVarOrDirectWord(PARAM_1);
                         loadPtrToResource(resStrLen() + 1);
-                        break;
-                    case 22:
+                    }
+                    case 22 -> {
                         getVarOrDirectWord(PARAM_1);
                         getVarOrDirectByte(PARAM_2);
-                        break;
-                    case 23:
-                        getVarOrDirectByte(PARAM_1);
-                        break;
-                    default:
-                        break;
+                    }
+                    case 23 -> getVarOrDirectByte(PARAM_1);
+                    default -> {
+                    }
                 }
             }
 
@@ -631,28 +596,23 @@ public class ScriptParser {
     }
 
     // 0xAE
-    private class WaitParser extends OpCodeParser<OpCode> {
+    private static class WaitParser extends OpCodeParser<OpCode> {
         // TODO: Haben Sub-Opcodes auch die 0x80, 0x40 und 0x20 Ausprägungen?
         @Override
         public OpCode parse() {
             opcode = readValue8();
 
             switch (opcode & 0x1F) {
-                case 1:
-                    getVarOrDirectByte(PARAM_1);
-                    break;
-
-                case 2:
-                case 3:
-                case 4:
-                    break;
+                case 1 -> getVarOrDirectByte(PARAM_1);
+                case 2, 3, 4 -> {
+                }
             }
 
             return new Wait();
         }
     }
 
-    private class WalkActorToParser extends OpCodeParser<OpCode> {
+    private static class WalkActorToParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             getVarOrDirectByte(PARAM_1);
@@ -663,7 +623,7 @@ public class ScriptParser {
         }
     }
 
-    private class WalkActorToActorParser extends OpCodeParser<OpCode> {
+    private static class WalkActorToActorParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             getVarOrDirectByte(PARAM_1);
@@ -674,7 +634,7 @@ public class ScriptParser {
         }
     }
 
-    private class WalkActorToObjectParser extends OpCodeParser<OpCode> {
+    private static class WalkActorToObjectParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             getVarOrDirectByte(PARAM_1);
@@ -684,7 +644,7 @@ public class ScriptParser {
         }
     }
 
-    private class DebugParser extends OpCodeParser<OpCode> {
+    private static class DebugParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             getVarOrDirectWord(PARAM_1);
@@ -692,7 +652,7 @@ public class ScriptParser {
         }
     }
 
-    private class DecrementParser extends OpCodeParser<Decrement> {
+    private static class DecrementParser extends OpCodeParser<Decrement> {
         @Override
         public Decrement parse() {
             getResultPos();
@@ -701,7 +661,7 @@ public class ScriptParser {
     }
 
     // 0x2E
-    private class DelayParser extends OpCodeParser<OpCode> {
+    private static class DelayParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             // This should be 24-bit LE
@@ -710,7 +670,7 @@ public class ScriptParser {
         }
     }
 
-    private class DelayVariableParser extends OpCodeParser<OpCode> {
+    private static class DelayVariableParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             getVar();
@@ -718,7 +678,7 @@ public class ScriptParser {
         }
     }
 
-    private class DivideParser extends OpCodeParser<OpCode> {
+    private static class DivideParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             getResultPos();
@@ -728,7 +688,7 @@ public class ScriptParser {
         }
     }
 
-    private class DoSentenceParser extends OpCodeParser<OpCode> {
+    private static class DoSentenceParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             int verb = getVarOrDirectByte(PARAM_1);
@@ -741,7 +701,7 @@ public class ScriptParser {
         }
     }
 
-    private class DrawBoxParser extends OpCodeParser<DrawBox> {
+    private static class DrawBoxParser extends OpCodeParser<DrawBox> {
         @Override
         public DrawBox parse() {
             getVarOrDirectWord(PARAM_1);
@@ -756,7 +716,7 @@ public class ScriptParser {
         }
     }
 
-    private class DrawObjectParser extends OpCodeParser<DrawObject> {
+    private static class DrawObjectParser extends OpCodeParser<DrawObject> {
         @Override
         public DrawObject parse() {
             getVarOrDirectWord(PARAM_1);
@@ -764,24 +724,22 @@ public class ScriptParser {
             opcode = readValue8();
 
             switch (opcode & (byte) 0x1F) {
-                case 1:
+                case 1 -> {
                     getVarOrDirectWord(PARAM_1);
                     getVarOrDirectWord(PARAM_2);
-                    break;
-                case 2:
-                    getVarOrDirectWord(PARAM_1);
-                    break;
-                case 0x1F:
-                    break;
-                default:
-                    break;
+                }
+                case 2 -> getVarOrDirectWord(PARAM_1);
+                case 0x1F -> {
+                }
+                default -> {
+                }
             }
 
             return new DrawObject();
         }
     }
 
-    private class ActorFromPosParser extends OpCodeParser<ActorFromPos> {
+    private static class ActorFromPosParser extends OpCodeParser<ActorFromPos> {
         @Override
         public ActorFromPos parse() {
             getResultPos();
@@ -792,11 +750,11 @@ public class ScriptParser {
         }
     }
 
-    private class DummyParser extends OpCodeParser<OpCode> {
+    private static class DummyParser extends OpCodeParser<OpCode> {
     }
 
     // 0xC0
-    private class EndCutSceneParser extends OpCodeParser<OpCode> {
+    private static class EndCutSceneParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             // NOP
@@ -804,7 +762,7 @@ public class ScriptParser {
         }
     }
 
-    private class EqualZeroParser extends OpCodeParser<OpCode> {
+    private static class EqualZeroParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             getVar();
@@ -813,26 +771,20 @@ public class ScriptParser {
         }
     }
 
-    private class ExpressionParser extends OpCodeParser<Expression> {
+    private static class ExpressionParser extends OpCodeParser<Expression> {
         @Override
         public Expression parse() {
             int result = getResultPos();
             while ((opcode = readValue8()) != (byte) 0xff) {
-                check:
                 switch (opcode & 0x1F) {
-                    case 1:
-                        getVarOrDirectByte(PARAM_1);
-                        break check;
-                    case 2:
-                    case 3:
-                    case 4:
-                    case 5:
-                        break;
-                    case 6:
+                    case 1 -> getVarOrDirectByte(PARAM_1);
+                    case 2, 3, 4, 5 -> {
+                    }
+                    case 6 -> {
                         byte opcode = readValue8();
                         OpCodeParser opCodeParser = opCodeLookup.get(opcode);
                         opCodeParser.run(opcode, buffer);
-                        break check;
+                    }
                 }
             }
 
@@ -840,7 +792,7 @@ public class ScriptParser {
         }
     }
 
-    private class FaceActorParser extends OpCodeParser<FaceActor> {
+    private static class FaceActorParser extends OpCodeParser<FaceActor> {
         @Override
         public FaceActor parse() {
             getVarOrDirectByte(PARAM_1);
@@ -850,7 +802,7 @@ public class ScriptParser {
         }
     }
 
-    private class FindInventoryParser extends OpCodeParser<FindInventory> {
+    private static class FindInventoryParser extends OpCodeParser<FindInventory> {
         @Override
         public FindInventory parse() {
             getResultPos();
@@ -860,7 +812,7 @@ public class ScriptParser {
         }
     }
 
-    private class FindObjectParser extends OpCodeParser<FindObject> {
+    private static class FindObjectParser extends OpCodeParser<FindObject> {
         @Override
         public FindObject parse() {
             getResultPos();
@@ -870,7 +822,7 @@ public class ScriptParser {
         }
     }
 
-    private class FreezeScriptsParser extends OpCodeParser<FreezeScripts> {
+    private static class FreezeScriptsParser extends OpCodeParser<FreezeScripts> {
         @Override
         public FreezeScripts parse() {
             getVarOrDirectByte(PARAM_1);
@@ -879,7 +831,7 @@ public class ScriptParser {
         }
     }
 
-    private class GetActorCostumeParser extends OpCodeParser<GetActorCostume> {
+    private static class GetActorCostumeParser extends OpCodeParser<GetActorCostume> {
         @Override
         public GetActorCostume parse() {
             getResultPos();
@@ -889,7 +841,7 @@ public class ScriptParser {
         }
     }
 
-    private class GetActorElevationParser extends OpCodeParser<GetActorElevation> {
+    private static class GetActorElevationParser extends OpCodeParser<GetActorElevation> {
         @Override
         public GetActorElevation parse() {
             getResultPos();
@@ -899,83 +851,57 @@ public class ScriptParser {
         }
     }
 
-    private class ActorOpsParser extends OpCodeParser<OpCode> {
+    private static class ActorOpsParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             int actor = getVarOrDirectByte(PARAM_1);
 
             while((opcode = buffer.get()) != (byte)0xFF) {
-                switch (opcode & (byte)0x1F) {
-                    case 0:
-                        getVarOrDirectByte(PARAM_1);
-                        break;
-                    case 1:
-                        getVarOrDirectByte(PARAM_1);
-                        break;
-                    case 2:
+                switch (opcode & (byte) 0x1F) {
+                    case 0 -> getVarOrDirectByte(PARAM_1);
+                    case 1 -> getVarOrDirectByte(PARAM_1);
+                    case 2 -> {
                         getVarOrDirectByte(PARAM_1);
                         getVarOrDirectByte(PARAM_2);
-                        break;
-                    case 3:
-                        getVarOrDirectByte(PARAM_1);
-                        break;
-                    case 4:
-                        getVarOrDirectByte(PARAM_1);
-                        break;
-                    case 5:
+                    }
+                    case 3 -> getVarOrDirectByte(PARAM_1);
+                    case 4 -> getVarOrDirectByte(PARAM_1);
+                    case 5 -> {
                         getVarOrDirectByte(PARAM_1);
                         getVarOrDirectByte(PARAM_2);
-                        break;
-                    case 6:
-                        getVarOrDirectByte(PARAM_1);
-                        break;
-                    case 7:
+                    }
+                    case 6 -> getVarOrDirectByte(PARAM_1);
+                    case 7 -> {
                         getVarOrDirectByte(PARAM_1);
                         getVarOrDirectByte(PARAM_2);
                         getVarOrDirectByte(PARAM_3);
-                        break;
-                    case 8:
-                        break;
-                    case 9:
-                        getVarOrDirectWord(PARAM_1);
-                        break;
-                    case 10:
-                        break;
-                    case 11:
+                    }
+                    case 8 -> {
+                    }
+                    case 9 -> getVarOrDirectWord(PARAM_1);
+                    case 10 -> {
+                    }
+                    case 11 -> {
                         getVarOrDirectByte(PARAM_1);
                         getVarOrDirectByte(PARAM_2);
-                        break;
-                    case 12:
-                        getVarOrDirectByte(PARAM_1);
-                        break;
-                    case 13:
-                        loadPtrToResource(resStrLen());
-                        break;
-                    case 14:
-                        getVarOrDirectByte(PARAM_1);
-                        break;
-                    case 16:
-                        getVarOrDirectByte(PARAM_1);
-                        break;
-                    case 17:
+                    }
+                    case 12 -> getVarOrDirectByte(PARAM_1);
+                    case 13 -> loadPtrToResource(resStrLen());
+                    case 14 -> getVarOrDirectByte(PARAM_1);
+                    case 16 -> getVarOrDirectByte(PARAM_1);
+                    case 17 -> {
                         getVarOrDirectByte(PARAM_1);
                         getVarOrDirectByte(PARAM_2);
-                        break;
-                    case 18:
-                        break;
-                    case 19:
-                        getVarOrDirectByte(PARAM_1);
-                        break;
-                    case 20:
-                        break;
-                    case 21:
-                        break;
-                    case 22:
-                        getVarOrDirectByte(PARAM_1);
-                        break;
-                    case 23:
-                        getVarOrDirectByte(PARAM_1);
-                        break;
+                    }
+                    case 18 -> {
+                    }
+                    case 19 -> getVarOrDirectByte(PARAM_1);
+                    case 20 -> {
+                    }
+                    case 21 -> {
+                    }
+                    case 22 -> getVarOrDirectByte(PARAM_1);
+                    case 23 -> getVarOrDirectByte(PARAM_1);
                 }
             }
 
@@ -983,17 +909,17 @@ public class ScriptParser {
         }
     }
 
-    private class GetActorFacingParser extends OpCodeParser<OpCode> {
+    private static class GetActorFacingParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
-            int result = getResultPos();
-            int actor = getVarOrDirectByte(PARAM_1);
+            getResultPos();
+            getVarOrDirectByte(PARAM_1);
 
             return new GetActorFacing();
         }
     }
 
-    private class GetActorMovingParser extends OpCodeParser<GetActorMoving> {
+    private static class GetActorMovingParser extends OpCodeParser<GetActorMoving> {
         @Override
         public GetActorMoving parse() {
             getResultPos();
@@ -1002,7 +928,7 @@ public class ScriptParser {
         }
     }
 
-    private class GetActorRoomParser extends OpCodeParser<OpCode> {
+    private static class GetActorRoomParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             getResultPos();
@@ -1011,7 +937,7 @@ public class ScriptParser {
         }
     }
 
-    private class GetActorScaleParser extends OpCodeParser<GetActorScale> {
+    private static class GetActorScaleParser extends OpCodeParser<GetActorScale> {
         @Override
         public GetActorScale parse() {
             getResultPos();
@@ -1021,7 +947,7 @@ public class ScriptParser {
         }
     }
 
-    private class GetActorWalkBoxParser extends OpCodeParser<GetActorWalkBox> {
+    private static class GetActorWalkBoxParser extends OpCodeParser<GetActorWalkBox> {
         @Override
         public GetActorWalkBox parse() {
             getResultPos();
@@ -1031,7 +957,7 @@ public class ScriptParser {
         }
     }
 
-    private class GetActorWidthParser extends OpCodeParser<GetActorWidth> {
+    private static class GetActorWidthParser extends OpCodeParser<GetActorWidth> {
         @Override
         public GetActorWidth parse() {
             getResultPos();
@@ -1041,31 +967,31 @@ public class ScriptParser {
         }
     }
 
-    private class GetActorXParser extends OpCodeParser<OpCode> {
+    private static class GetActorXParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
-            int result = buffer.getShort();
+            buffer.getShort();
             buffer.getShort();
             return new GetActorX();
         }
     }
 
-    private class GetActorYParser extends OpCodeParser<OpCode> {
+    private static class GetActorYParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
-            int result = buffer.getShort();
+            buffer.getShort();
             buffer.getShort();
             return new GetActorY();
         }
     }
 
-    private class GetAnimCounterParser extends OpCodeParser<OpCode> {
+    private static class GetAnimCounterParser extends OpCodeParser<OpCode> {
     }
 
-    private class GetClosestObjActorParser extends OpCodeParser<OpCode> {
+    private static class GetClosestObjActorParser extends OpCodeParser<OpCode> {
     }
 
-    private class ActorSetClassParser extends OpCodeParser<ActorSetClass> {
+    private static class ActorSetClassParser extends OpCodeParser<ActorSetClass> {
         @Override
         public ActorSetClass parse() {
             getVarOrDirectWord(PARAM_1);
@@ -1074,7 +1000,7 @@ public class ScriptParser {
         }
     }
 
-    private class GetDistParser extends OpCodeParser<GetDist> {
+    private static class GetDistParser extends OpCodeParser<GetDist> {
         @Override
         public GetDist parse() {
             getResultPos();
@@ -1085,7 +1011,7 @@ public class ScriptParser {
         }
     }
 
-    private class GetInventoryCountParser extends OpCodeParser<GetInventoryCount> {
+    private static class GetInventoryCountParser extends OpCodeParser<GetInventoryCount> {
         @Override
         public GetInventoryCount parse() {
             getResultPos();
@@ -1094,7 +1020,7 @@ public class ScriptParser {
         }
     }
 
-    private class GetObjectOwnerParser extends OpCodeParser<GetObjectOwner> {
+    private static class GetObjectOwnerParser extends OpCodeParser<GetObjectOwner> {
         @Override
         public GetObjectOwner parse() {
             getResultPos();
@@ -1104,7 +1030,7 @@ public class ScriptParser {
         }
     }
 
-    private class GetObjectStateParser extends OpCodeParser<GetObjectState> {
+    private static class GetObjectStateParser extends OpCodeParser<GetObjectState> {
         @Override
         public GetObjectState parse() {
             getResultPos();
@@ -1114,7 +1040,7 @@ public class ScriptParser {
         }
     }
 
-    private class GetRandomNumberParser extends OpCodeParser<GetRandomNumber> {
+    private static class GetRandomNumberParser extends OpCodeParser<GetRandomNumber> {
         @Override
         public GetRandomNumber parse() {
             getResultPos();
@@ -1123,7 +1049,7 @@ public class ScriptParser {
         }
     }
 
-    private class GetScriptRunningParser extends OpCodeParser<GetScriptRunning> {
+    private static class GetScriptRunningParser extends OpCodeParser<GetScriptRunning> {
         @Override
         public GetScriptRunning parse() {
             getResultPos();
@@ -1132,20 +1058,20 @@ public class ScriptParser {
         }
     }
 
-    private class GetStringWidthParser extends OpCodeParser<OpCode> {
+    private static class GetStringWidthParser extends OpCodeParser<OpCode> {
     }
 
-    private class GetVerbEntryPointParser extends OpCodeParser<OpCode> {
+    private static class GetVerbEntryPointParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
-            int result = buffer.getShort();
+            buffer.getShort();
             buffer.getShort();
             buffer.getShort();
             return new GetVerbEntryPoint();
         }
     }
 
-    private class IfClassOfIsParser extends OpCodeParser<IfClassOfIs> {
+    private static class IfClassOfIsParser extends OpCodeParser<IfClassOfIs> {
         @Override
         public IfClassOfIs parse() {
             getVarOrDirectWord(PARAM_1);
@@ -1155,10 +1081,10 @@ public class ScriptParser {
         }
     }
 
-    private class IfNotStateParser extends OpCodeParser<OpCode> {
+    private static class IfNotStateParser extends OpCodeParser<OpCode> {
     }
 
-    private class AddParser extends OpCodeParser<Add> {
+    private static class AddParser extends OpCodeParser<Add> {
         @Override
         public Add parse() {
             getResultPos();
@@ -1168,10 +1094,10 @@ public class ScriptParser {
         }
     }
 
-    private class IfStateParser extends OpCodeParser<OpCode> {
+    private static class IfStateParser extends OpCodeParser<OpCode> {
     }
 
-    private class IncrementParser extends OpCodeParser<Increment> {
+    private static class IncrementParser extends OpCodeParser<Increment> {
         @Override
         public Increment parse() {
             getResultPos();
@@ -1179,7 +1105,7 @@ public class ScriptParser {
         }
     }
 
-    private class IsActorInBoxParser extends OpCodeParser<IsActorInBox> {
+    private static class IsActorInBoxParser extends OpCodeParser<IsActorInBox> {
         @Override
         public IsActorInBox parse() {
             getVarOrDirectByte(PARAM_1);
@@ -1189,7 +1115,7 @@ public class ScriptParser {
     }
 
     // 0x48 || 0xC8
-    private class IsEqualParser extends OpCodeParser<OpCode> {
+    private static class IsEqualParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             getVar();
@@ -1199,7 +1125,7 @@ public class ScriptParser {
         }
     }
 
-    private class IsGreaterParser extends OpCodeParser<IsGreater> {
+    private static class IsGreaterParser extends OpCodeParser<IsGreater> {
         @Override
         public IsGreater parse() {
             getVar();
@@ -1210,7 +1136,7 @@ public class ScriptParser {
         }
     }
 
-    private class IsGreaterEqualParser extends OpCodeParser<IsGreaterEqual> {
+    private static class IsGreaterEqualParser extends OpCodeParser<IsGreaterEqual> {
         @Override
         public IsGreaterEqual parse() {
             getVar();
@@ -1221,7 +1147,7 @@ public class ScriptParser {
         }
     }
 
-    private class IsLessParser extends OpCodeParser<IsLess> {
+    private static class IsLessParser extends OpCodeParser<IsLess> {
         @Override
         public IsLess parse() {
             getVar();
@@ -1232,7 +1158,7 @@ public class ScriptParser {
         }
     }
 
-    private class IsNotEqualParser extends OpCodeParser<IsNotEqual> {
+    private static class IsNotEqualParser extends OpCodeParser<IsNotEqual> {
         @Override
         public IsNotEqual parse() {
             getVar();
@@ -1244,7 +1170,7 @@ public class ScriptParser {
     }
 
     // 0x7C
-    private class IsSoundRunningParser extends OpCodeParser<OpCode> {
+    private static class IsSoundRunningParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             getResultPos();
@@ -1254,7 +1180,7 @@ public class ScriptParser {
     }
 
     // 0x18
-    private class JumpRelativeParser extends OpCodeParser<OpCode> {
+    private static class JumpRelativeParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             readTarget();
@@ -1262,10 +1188,10 @@ public class ScriptParser {
         }
     }
 
-    private class AndParser extends OpCodeParser<OpCode> {
+    private static class AndParser extends OpCodeParser<OpCode> {
     }
 
-    private class LessOrEqualParser extends OpCodeParser<LessOrEqual> {
+    private static class LessOrEqualParser extends OpCodeParser<LessOrEqual> {
         @Override
         public LessOrEqual parse() {
             getVar();
@@ -1276,7 +1202,7 @@ public class ScriptParser {
         }
     }
 
-    private class LightsParser extends OpCodeParser<OpCode> {
+    private static class LightsParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             getVarOrDirectByte(PARAM_1);
@@ -1286,34 +1212,32 @@ public class ScriptParser {
         }
     }
 
-    private class LoadRoomWithEgoParser extends OpCodeParser<LoadRoomWithEgo> {
+    private static class LoadRoomWithEgoParser extends OpCodeParser<LoadRoomWithEgo> {
         @Override
         public LoadRoomWithEgo parse() {
             getVarOrDirectWord(PARAM_1);
             getVarOrDirectByte(PARAM_2);
 
-            int x = readValue16();
-            int y = readValue16();
+            readValue16();
+            readValue16();
 
             return new LoadRoomWithEgo();
         }
     }
 
-    private class MatrixOpParser extends OpCodeParser<MatrixOp> {
+    private static class MatrixOpParser extends OpCodeParser<MatrixOp> {
         @Override
         public MatrixOp parse() {
             opcode = readValue8();
 
-            switch (opcode & (byte)0x1F) {
-                case 1:
-                case 2:
-                case 3:
+            switch (opcode & (byte) 0x1F) {
+                case 1, 2, 3 -> {
                     getVarOrDirectByte(PARAM_1);
                     getVarOrDirectByte(PARAM_2);
-                    break;
+                }
                 //case 4:
-                default:
-                    break;
+                default -> {
+                }
             }
 
             return new MatrixOp();
@@ -1321,7 +1245,7 @@ public class ScriptParser {
     }
 
     // 0x1A
-    private class MoveParser extends OpCodeParser<Move> {
+    private static class MoveParser extends OpCodeParser<Move> {
         @Override
         public Move parse() {
             getResultPos();
@@ -1330,7 +1254,7 @@ public class ScriptParser {
         }
     }
 
-    private class MultiplyParser extends OpCodeParser<Multiply> {
+    private static class MultiplyParser extends OpCodeParser<Multiply> {
         @Override
         public Multiply parse() {
             getResultPos();
@@ -1340,7 +1264,7 @@ public class ScriptParser {
         }
     }
 
-    private class NotEqualZeroParser extends OpCodeParser<NotEqualZero> {
+    private static class NotEqualZeroParser extends OpCodeParser<NotEqualZero> {
         @Override
         public NotEqualZero parse() {
             getVar();
@@ -1349,13 +1273,13 @@ public class ScriptParser {
         }
     }
 
-    private class OldRoomEffectParser extends OpCodeParser<OpCode> {
+    private static class OldRoomEffectParser extends OpCodeParser<OpCode> {
     }
 
-    private class OrParser extends OpCodeParser<OpCode> {
+    private static class OrParser extends OpCodeParser<OpCode> {
     }
 
-    private class AnimateActorParser extends OpCodeParser<OpCode> {
+    private static class AnimateActorParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             getVarOrDirectByte(PARAM_1);
@@ -1365,7 +1289,7 @@ public class ScriptParser {
     }
 
     // 0x58
-    private class OverrideParser extends OpCodeParser<OpCode> {
+    private static class OverrideParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             buffer.get();
@@ -1373,7 +1297,7 @@ public class ScriptParser {
         }
     }
 
-    private class PanCameraToParser extends OpCodeParser<PanCameraTo> {
+    private static class PanCameraToParser extends OpCodeParser<PanCameraTo> {
         @Override
         public PanCameraTo parse() {
             getVarOrDirectWord(PARAM_1);
@@ -1382,7 +1306,7 @@ public class ScriptParser {
         }
     }
 
-    private class PickupObjectParser extends OpCodeParser<PickupObject> {
+    private static class PickupObjectParser extends OpCodeParser<PickupObject> {
         @Override
         public PickupObject parse() {
             getVarOrDirectWord(PARAM_1);
@@ -1392,7 +1316,7 @@ public class ScriptParser {
     }
 
     // 0x14
-    private class PrintParser extends OpCodeParser<Print> {
+    private static class PrintParser extends OpCodeParser<Print> {
         @Override
         public Print parse() {
             Print p = new Print();
@@ -1402,36 +1326,37 @@ public class ScriptParser {
             while ((opcode = readValue8()) != (byte) 0xFF) {
                 // Text Pos
                 switch (opcode & (byte) 0xF) {
-                    case (byte) 0x00:
+                    case (byte) 0x00 -> {
                         int x = getVarOrDirectWord(PARAM_1);
                         int y = getVarOrDirectWord(PARAM_2);
-                        break;
-                    case (byte) 0x01:
+                    }
+                    case (byte) 0x01 -> {
                         int color = getVarOrDirectByte(PARAM_1);
-                        break;
-                    case (byte) 0x02:
+                    }
+                    case (byte) 0x02 -> {
                         int right = getVarOrDirectWord(PARAM_1);
-                        break;
-                    case (byte) 0x03:
+                    }
+                    case (byte) 0x03 -> {
                         int width = getVarOrDirectWord(PARAM_1);
                         int height = getVarOrDirectWord(PARAM_2);
-                        break;
-                    case (byte) 0x04:
-                        break;
-                    case (byte) 0x06:
-                        break;
-                    case (byte) 0x07:
-                        break;
-                    case (byte) 0x08:
+                    }
+                    case (byte) 0x04 -> {
+                    }
+                    case (byte) 0x06 -> {
+                    }
+                    case (byte) 0x07 -> {
+                    }
+                    case (byte) 0x08 -> {
                         int offset = getVarOrDirectWord(PARAM_1);
                         int delay = getVarOrDirectWord(PARAM_2);
-                        break;
-                    case (byte) 0x0F:
+                    }
+                    case (byte) 0x0F -> {
                         String s = loadPtrToResource(resStrLen());
                         p.setText(s);
                         return p;
-                    default:
-                        break;
+                    }
+                    default -> {
+                    }
                 }
             }
 
@@ -1439,7 +1364,7 @@ public class ScriptParser {
         }
     }
 
-    private class PrintEgoParser extends OpCodeParser<Print> {
+    private static class PrintEgoParser extends OpCodeParser<Print> {
         @Override
         public Print parse() {
             Print p = new Print();
@@ -1475,7 +1400,7 @@ public class ScriptParser {
         }
     }
 
-    private class PseudoRoomParser extends OpCodeParser<PseudoRoom> {
+    private static class PseudoRoomParser extends OpCodeParser<PseudoRoom> {
         @Override
         public PseudoRoom parse() {
             while (readValue8() != (byte) 0x00) {
@@ -1485,7 +1410,7 @@ public class ScriptParser {
         }
     }
 
-    private class PutActorParser extends OpCodeParser<OpCode> {
+    private static class PutActorParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             getVarOrDirectByte(PARAM_1);
@@ -1495,7 +1420,7 @@ public class ScriptParser {
         }
     }
 
-    private class PutActorAtObjectParser extends OpCodeParser<PutActorAtObject> {
+    private static class PutActorAtObjectParser extends OpCodeParser<PutActorAtObject> {
         @Override
         public PutActorAtObject parse() {
             getVarOrDirectByte(PARAM_1);
@@ -1505,7 +1430,7 @@ public class ScriptParser {
         }
     }
 
-    private class PutActorInRoomParser extends OpCodeParser<OpCode> {
+    private static class PutActorInRoomParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             getVarOrDirectByte(PARAM_1);
@@ -1515,14 +1440,14 @@ public class ScriptParser {
     }
 
     // 0x80
-    private class BreakHereParser extends OpCodeParser<OpCode> {
+    private static class BreakHereParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             return new BreakHere();
         }
     }
 
-    private class ResourceRoutinesParser extends OpCodeParser<ResourceRoutines> {
+    private static class ResourceRoutinesParser extends OpCodeParser<ResourceRoutines> {
         @Override
         public ResourceRoutines parse() {
             opcode = readValue8();
@@ -1533,35 +1458,14 @@ public class ScriptParser {
             int op = opcode & 0x3F;
 
             switch (op) {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                case 10:
-                case 11:
-                case 12:
-                case 13:
-                case 14:
-                case 15:
-                case 16:
-                case 18:
-                case 19:
-                    break;
-                case 20:
-                    getVarOrDirectByte(PARAM_2);
-                    break;
-                case 36:
+                case 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19 -> {
+                }
+                case 20 -> getVarOrDirectByte(PARAM_2);
+                case 36 -> {
                     getVarOrDirectByte(PARAM_2);
                     readValue8();
-                    break;
-                case 37:
-                    getVarOrDirectByte(PARAM_2);
-                    break;
+                }
+                case 37 -> getVarOrDirectByte(PARAM_2);
             }
 
             return new ResourceRoutines();
@@ -1569,7 +1473,7 @@ public class ScriptParser {
     }
 
     // 0x33
-    private class RoomOpsParser extends OpCodeParser<OpCode> {
+    private static class RoomOpsParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
             opcode = buffer.get();
@@ -1658,13 +1562,13 @@ public class ScriptParser {
         }
     }
 
-    private class SaveLoadGameParser extends OpCodeParser<OpCode> {
+    private static class SaveLoadGameParser extends OpCodeParser<OpCode> {
     }
 
-    private class SaveLoadVarsParser extends OpCodeParser<OpCode> {
+    private static class SaveLoadVarsParser extends OpCodeParser<OpCode> {
     }
 
-    private class SaveRestoreVerbsParser extends OpCodeParser<SaveRestoreVerbs> {
+    private static class SaveRestoreVerbsParser extends OpCodeParser<SaveRestoreVerbs> {
         @Override
         public SaveRestoreVerbs parse() {
             opcode = readValue8();
@@ -1673,18 +1577,16 @@ public class ScriptParser {
             getVarOrDirectByte(PARAM_2);
             getVarOrDirectByte(PARAM_3);
 
-            switch(opcode) {
-                case 1:
-                case 2:
-                case 3:
-                    break;
+            switch (opcode) {
+                case 1, 2, 3 -> {
+                }
             }
 
             return new SaveRestoreVerbs();
         }
     }
 
-    private class SetCameraAtParser extends OpCodeParser<SetCameraAt> {
+    private static class SetCameraAtParser extends OpCodeParser<SetCameraAt> {
         @Override
         public SetCameraAt parse() {
             getVarOrDirectWord(PARAM_1);
@@ -1693,7 +1595,7 @@ public class ScriptParser {
         }
     }
 
-    private class SetObjectNameParser extends OpCodeParser<SetObjectName> {
+    private static class SetObjectNameParser extends OpCodeParser<SetObjectName> {
         @Override
         public SetObjectName parse() {
             getVarOrDirectWord(PARAM_1);
@@ -1703,7 +1605,7 @@ public class ScriptParser {
     }
 
     // 0x29
-    private class SetOwnerOfParser extends OpCodeParser<SetOwnerOf> {
+    private static class SetOwnerOfParser extends OpCodeParser<SetOwnerOf> {
         @Override
         public SetOwnerOf parse() {
             getVarOrDirectWord(PARAM_1);
@@ -1713,7 +1615,7 @@ public class ScriptParser {
         }
     }
 
-    private class SetStateParser extends OpCodeParser<SetState> {
+    private static class SetStateParser extends OpCodeParser<SetState> {
         @Override
         public SetState parse() {
             getVarOrDirectWord(PARAM_1);
@@ -1722,7 +1624,7 @@ public class ScriptParser {
         }
     }
 
-    private class SetVarRangeParser extends OpCodeParser<SetVarRange> {
+    private static class SetVarRangeParser extends OpCodeParser<SetVarRange> {
         @Override
         public SetVarRange parse() {
             getResultPos();
@@ -1736,7 +1638,7 @@ public class ScriptParser {
         }
     }
 
-    private class ChainScriptParser extends OpCodeParser<ChainScript> {
+    private static class ChainScriptParser extends OpCodeParser<ChainScript> {
         @Override
         public ChainScript parse() {
             getVarOrDirectByte(PARAM_1);
@@ -1746,7 +1648,7 @@ public class ScriptParser {
         }
     }
 
-    private class SoundKludgeParser extends OpCodeParser<SoundKludge> {
+    private static class SoundKludgeParser extends OpCodeParser<SoundKludge> {
         @Override
         public SoundKludge parse() {
             getWordVararg();
@@ -1754,7 +1656,7 @@ public class ScriptParser {
         }
     }
 
-    private class StartMusicParser extends OpCodeParser<StartMusic> {
+    private static class StartMusicParser extends OpCodeParser<StartMusic> {
         @Override
         public StartMusic parse() {
             getVarOrDirectByte(PARAM_1);
@@ -1762,7 +1664,7 @@ public class ScriptParser {
         }
     }
 
-    private class StartObjectParser extends OpCodeParser<StartObject> {
+    private static class StartObjectParser extends OpCodeParser<StartObject> {
         @Override
         public StartObject parse() {
             getVarOrDirectWord(PARAM_1);
@@ -1773,7 +1675,7 @@ public class ScriptParser {
     }
 
     // 0x0A, 0x2A, 0x4A, 0x6A
-    private class StartScriptParser extends OpCodeParser<StartScript> {
+    private static class StartScriptParser extends OpCodeParser<StartScript> {
         @Override
         public StartScript parse() {
             getVarOrDirectByte(PARAM_1);
@@ -1783,7 +1685,7 @@ public class ScriptParser {
     }
 
     // 0x1C
-    private class StartSoundParser extends OpCodeParser<StartSound> {
+    private static class StartSoundParser extends OpCodeParser<StartSound> {
         @Override
         public StartSound parse() {
             getVarOrDirectByte(PARAM_1);
@@ -1792,7 +1694,7 @@ public class ScriptParser {
     }
 
     // 0x20
-    private class StopMusicParser extends OpCodeParser<StopMusic> {
+    private static class StopMusicParser extends OpCodeParser<StopMusic> {
         @Override
         public StopMusic parse() {
             // NOP
@@ -1801,7 +1703,7 @@ public class ScriptParser {
     }
 
     // 0xA0
-    private class StopObjectCodeParser extends OpCodeParser<StopObjectCode> {
+    private static class StopObjectCodeParser extends OpCodeParser<StopObjectCode> {
         @Override
         public StopObjectCode parse() {
             // NOP
@@ -1809,7 +1711,7 @@ public class ScriptParser {
         }
     }
 
-    private class StopObjectScriptParser extends OpCodeParser<StopObjectScript> {
+    private static class StopObjectScriptParser extends OpCodeParser<StopObjectScript> {
         @Override
         public StopObjectScript parse() {
             getVarOrDirectByte(PARAM_1);
@@ -1817,7 +1719,7 @@ public class ScriptParser {
         }
     }
 
-    private class StopScriptParser extends OpCodeParser<StopScript> {
+    private static class StopScriptParser extends OpCodeParser<StopScript> {
         @Override
         public StopScript parse() {
             getVarOrDirectByte(PARAM_1);
@@ -1825,7 +1727,7 @@ public class ScriptParser {
         }
     }
 
-    private class StopSoundParser extends OpCodeParser<StopSound> {
+    private static class StopSoundParser extends OpCodeParser<StopSound> {
         @Override
         public StopSound parse() {
             getVarOrDirectByte(PARAM_1);

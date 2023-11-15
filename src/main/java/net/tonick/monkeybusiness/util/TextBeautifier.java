@@ -1,12 +1,8 @@
 package net.tonick.monkeybusiness.util;
 
 import net.tonick.monkeybusiness.opcodes.ITextContainer;
-import net.tonick.monkeybusiness.parser.ScriptParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
 public class TextBeautifier {
     private static final Logger logger = LogManager.getLogger(TextBeautifier.class);
@@ -20,7 +16,7 @@ public class TextBeautifier {
         String p0 = HexPrettyPrinter.hexStack(cp850s);
         logger.trace("\n{}", p0);
 
-        String output = input
+        return input
                 .replaceAll("\\x0F", "™")
                 .replaceAll("\\u0003", " ")
                 .replaceAll("\\x5E", "…")
@@ -49,8 +45,6 @@ public class TextBeautifier {
                 .replaceAll("Küß", "Küss")
                 .replaceAll("häßlich", "hässlich")
                 .replaceAll("…[^\\p{Graph}]+…", " … ");
-
-        return output;
     }
 
     public static String beautify(ITextContainer container) {
