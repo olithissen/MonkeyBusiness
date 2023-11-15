@@ -5,13 +5,10 @@ import net.tonick.monkeybusiness.parser.Script;
 import net.tonick.monkeybusiness.parser.ScriptExtractor;
 import net.tonick.monkeybusiness.parser.ScriptParser;
 import net.tonick.monkeybusiness.util.TextBeautifier;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * A Scumm v5 text extractor

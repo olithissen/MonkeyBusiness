@@ -1,7 +1,7 @@
 package net.tonick.monkeybusiness.parser;
 
-import net.tonick.monkeybusiness.opcodes.*;
 import net.tonick.monkeybusiness.util.HexPrettyPrinter;
+import net.tonick.monkeybusiness.opcodes.*;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,12 +14,10 @@ import java.util.Map;
 /**
  * Heavy lifting
  */
-@SuppressWarnings("rawtypes")
 public class ScriptParser {
     private static final Logger logger = LogManager.getLogger(ScriptParser.class);
 
-    @SuppressWarnings("rawtypes")
-    public static Map<Byte, OpCodeParser> opCodeLookup = new HashMap<>();
+    public final Map<Byte, OpCodeParser> opCodeLookup = new HashMap<>();
 
     public ScriptParser() {
         // Collapsible Region for OpCodes
@@ -516,9 +514,9 @@ public class ScriptParser {
                     getVarOrDirectByte(PARAM_3);
                 }
                 case 4 -> {
-                    getResultPos();
-                    getVarOrDirectByte(PARAM_1);
-                    getVarOrDirectByte(PARAM_2);
+                    int pos = getResultPos();
+                    int a = getVarOrDirectByte(PARAM_1);
+                    int b = getVarOrDirectByte(PARAM_2);
                 }
                 case 5 -> {
                     getVarOrDirectByte(PARAM_1);
@@ -771,11 +769,12 @@ public class ScriptParser {
         }
     }
 
-    private static class ExpressionParser extends OpCodeParser<Expression> {
+    private class ExpressionParser extends OpCodeParser<Expression> {
         @Override
         public Expression parse() {
             int result = getResultPos();
             while ((opcode = readValue8()) != (byte) 0xff) {
+                check:
                 switch (opcode & 0x1F) {
                     case 1 -> getVarOrDirectByte(PARAM_1);
                     case 2, 3, 4, 5 -> {
@@ -912,8 +911,8 @@ public class ScriptParser {
     private static class GetActorFacingParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
-            getResultPos();
-            getVarOrDirectByte(PARAM_1);
+            int result = getResultPos();
+            int actor = getVarOrDirectByte(PARAM_1);
 
             return new GetActorFacing();
         }
@@ -970,7 +969,7 @@ public class ScriptParser {
     private static class GetActorXParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
-            buffer.getShort();
+            int result = buffer.getShort();
             buffer.getShort();
             return new GetActorX();
         }
@@ -979,7 +978,7 @@ public class ScriptParser {
     private static class GetActorYParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
-            buffer.getShort();
+            int result = buffer.getShort();
             buffer.getShort();
             return new GetActorY();
         }
@@ -1064,7 +1063,7 @@ public class ScriptParser {
     private static class GetVerbEntryPointParser extends OpCodeParser<OpCode> {
         @Override
         public OpCode parse() {
-            buffer.getShort();
+            int result = buffer.getShort();
             buffer.getShort();
             buffer.getShort();
             return new GetVerbEntryPoint();
@@ -1218,8 +1217,8 @@ public class ScriptParser {
             getVarOrDirectWord(PARAM_1);
             getVarOrDirectByte(PARAM_2);
 
-            readValue16();
-            readValue16();
+            int x = readValue16();
+            int y = readValue16();
 
             return new LoadRoomWithEgo();
         }

@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class ScriptExtractor {
     // Resource types
@@ -24,7 +25,7 @@ public class ScriptExtractor {
 
 
     public static List<Script> extractScripts(byte[] bytes) {
-        List<Script> scripts = List.of(SCRP, LSCR, EXCD, ENCD, OBCD).stream()
+        List<Script> scripts = Stream.of(SCRP, LSCR, EXCD, ENCD, OBCD)
                 .map(String::getBytes)
                 .map(scriptType -> extractScript(bytes, scriptType))
                 .flatMap(Collection::stream)

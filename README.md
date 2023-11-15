@@ -5,7 +5,7 @@ The back story to this project is covered in my blog post ["A deep dive into the
 
 ## Requirements
 
-* Java 11+ (Tested with Temurin 21)
+* Java 21 (Tested with Temurin 21)
 * Maven (Tested with Maven 3.9.5)
 
 ## Build
@@ -16,15 +16,22 @@ mvn clean test
 
 A successful build will leave you with a `monkeybusiness.jar` in the `target` directory.
 
-**A note on testing:**
+### A note on testing
 For obvious reasons the project does not contain any game files.
 Nontheless testing against them makes a lot of sense.
 So JUnit assumes a file named `monkey.001` in `src/test/resource` but will skip certain tests if the file is not available.
 This will not affect other unit-tests.
 
+Furthermore there is a special "test" called `MonkeyBusinessTest#createRegressiveTestFiles`.
+It will extract all available opcodes from a provided game file to create special one-opcode-scripts in `src/test/resources/opcodes`.
+This can come in handy for testing special opcdes in isolation.
 
 ## Run
 
 ```
 java -jar monkeybusiness.jar "path/to/your/monkey.001" 
 ```
+
+## Troubleshooting
+
+* **Somehow it's not reading my game files:** Make sure that it's a SCUMM V5 file. Older game versions like the EGA version are SCUMM V4 which is very different from V5.
