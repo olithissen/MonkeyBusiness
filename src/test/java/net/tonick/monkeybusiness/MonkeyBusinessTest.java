@@ -4,13 +4,16 @@ import net.tonick.monkeybusiness.opcodes.*;
 import net.tonick.monkeybusiness.parser.Script;
 import net.tonick.monkeybusiness.parser.ScriptExtractor;
 import net.tonick.monkeybusiness.parser.ScriptParser;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.opentest4j.TestAbortedException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -26,6 +29,11 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MonkeyBusinessTest {
+    public static Stream<Path> regressiveTestFileProvider() throws IOException {
+        Path path = Paths.get("src", "test", "resources", "opcodes");
+        return Files.list(path);//.filter(x -> x.endsWith("VerbOps.bin"));
+    }
+
     @Test
     public void testReadScriptAt() throws IOException {
         File f = new File(getClass().getClassLoader().getResource("script1.bin").getFile());
@@ -93,7 +101,9 @@ class MonkeyBusinessTest {
 
     @Test
     public void testParserOnFullGameFile() throws IOException {
-        File f = new File("/home/oli/Downloads/mi1/monkey.001");
+        URL resource = getClass().getClassLoader().getResource("monkey.001");
+        Assumptions.assumeTrue(resource != null);
+        File f = new File(resource.getFile());
 
         ScriptParser parser = new ScriptParser();
 
@@ -102,16 +112,17 @@ class MonkeyBusinessTest {
 
         long failedScripts = scripts.stream()
                 .map(parser::parse)
-                .filter(script -> script.hasErrors())
+                .filter(Script::hasErrors)
                 .count();
 
         assertEquals(0, failedScripts);
     }
 
-
-//    @Test
+    @Test
     public void createRegressiveTestFiles() throws IOException {
-        File f = new File("/home/oli/Downloads/mi1/monkey.001");
+        URL resource = getClass().getClassLoader().getResource("monkey.001");
+        Assumptions.assumeTrue(resource != null);
+        File f = new File(resource.getFile());
 
         ScriptParser parser = new ScriptParser();
 
@@ -166,10 +177,5 @@ class MonkeyBusinessTest {
 
         assertNull(script.getParseError(), "Script has parse errors");
         assertTrue(script.isTerminatedCorrectly(), "Script is not terminated correctly");
-    }
-
-    public static Stream<Path> regressiveTestFileProvider() throws IOException {
-        Path path = Paths.get("src", "test", "resources", "opcodes");
-        return Files.list(path);//.filter(x -> x.endsWith("VerbOps.bin"));
     }
 }
