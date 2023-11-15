@@ -19,7 +19,7 @@ A successful build will leave you with a `monkeybusiness.jar` in the `target` di
 ### A note on testing
 For obvious reasons the project does not contain any game files.
 Nontheless testing with them makes a lot of sense.
-(And to be hones: You'll need them anyway if you want to do anyting with this project...)
+(And to be honest: You'll need them anyway if you want to do anyting with this project...)
 So JUnit assumes a file named `monkey.001` in `src/test/resource` but will skip certain tests if the file is not available.
 This will not affect other unit-tests.
 
