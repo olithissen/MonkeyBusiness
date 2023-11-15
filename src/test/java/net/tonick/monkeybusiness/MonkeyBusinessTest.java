@@ -24,12 +24,14 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class MonkeyBusinessTest {
     public static Stream<Path> regressiveTestFileProvider() throws IOException {
-        Path path = Paths.get("src", "test", "resources", "opcodes");
-        return Files.list(path);//.filter(x -> x.endsWith("VerbOps.bin"));
+        Path path = Paths.get("src/test/resources/opcodes");
+        assumeTrue(Files.exists(path));
+        return Files.list(path);
     }
 
     @Test
@@ -102,7 +104,7 @@ class MonkeyBusinessTest {
     @Order(2)
     public void testParserOnFullGameFile() throws IOException {
         URL resource = getClass().getClassLoader().getResource("monkey.001");
-        Assumptions.assumeTrue(resource != null);
+        assumeTrue(resource != null);
         File f = new File(resource.getFile());
 
         ScriptParser parser = new ScriptParser();
@@ -127,7 +129,7 @@ class MonkeyBusinessTest {
     @Order(3)
     public void createRegressiveTestFiles() throws IOException {
         URL resource = getClass().getClassLoader().getResource("monkey.001");
-        Assumptions.assumeTrue(resource != null);
+        assumeTrue(resource != null);
         File f = new File(resource.getFile());
 
         ScriptParser parser = new ScriptParser();
