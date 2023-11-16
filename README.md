@@ -12,6 +12,7 @@ The back story to this project is covered in my blog post ["A deep dive into the
 
 ```
 mvn clean test
+mvn package
 ```
 
 A successful build will leave you with a `monkeybusiness.jar` in the `target` directory.
@@ -20,7 +21,7 @@ A successful build will leave you with a `monkeybusiness.jar` in the `target` di
 For obvious reasons the project does not contain any game files.
 Nontheless testing with them makes a lot of sense.
 (And to be honest: You'll need them anyway if you want to do anyting with this project...)
-So JUnit assumes a file named `monkey.001` in `src/test/resource` but will skip certain tests if the file is not available.
+So JUnit assumes a file named `monkey.001` in `src/test/resources` but will skip certain tests if the file is not available.
 This will not affect other unit-tests.
 
 Furthermore there is a special "test" called `MonkeyBusinessTest#createRegressiveTestFiles`.
